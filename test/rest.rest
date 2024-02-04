@@ -1,1 +1,4 @@
 GET http://127.0.0.1:8787/
+Content-Type:text/plain
+Transfer-Encoding:chunked
+X-Content-Type-Options:nosniff
