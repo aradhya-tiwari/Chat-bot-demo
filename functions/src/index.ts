@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { streamText } from 'hono/streaming'
+import { streamText, streamSSE } from 'hono/streaming'
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { embeddingText } from '../data/cf-pricing'
@@ -31,9 +31,11 @@ app.get('/', async (c) => {
 
   const chatModel = new ChatOpenAI({
     openAIApiKey: c.env.OPENAI_KEY,
-    streaming: true
+    streaming: true,
+    // maxTokens: 100
   });
-  const splitter = new RecursiveCharacterTextSplitter();
+
+  const splitter = new RecursiveCharacterTextSplitter({ separators: ['/n', '/n/n', "--X--", " ", ''] });
   const doc = new Document({ pageContent: embeddingText });
   const splitDocs = await splitter.splitDocuments([doc]);
   const embeddings = new OpenAIEmbeddings({ openAIApiKey: c.env.OPENAI_KEY })
@@ -44,7 +46,7 @@ app.get('/', async (c) => {
 
 
   const prompt =
-    ChatPromptTemplate.fromTemplate(`Answer the following question based only on the provided context:
+    ChatPromptTemplate.fromTemplate(`You are a chatbot for pricing only answer provided in context, provided context:
 
 <context>
 {context}
@@ -65,19 +67,20 @@ Question: {input}`);
   });
 
   let parser = new StringOutputParser()
-  let streamm = await retrievalChain.invoke({ input: "what is the pricing of cloudflare d1 database" })
+  let streamm = await retrievalChain.invoke({ input: "what is the pricing of d1  tell me in a freindly tone" })
 
 
   // let streamm = await chatModel.pipe(parser).stream("hey there, pls tell me an indian styled joke in hinglish")
 
-  // return streamText(c, async (strm) => {
+  // return streamSSE(c, async (strm) => {
+  //   let sm = "Wow"
   //   for await (let chunks of streamm) {
-  //     console.log(chunks)
-  //     strm.write(chunks)
+  //     console.log(chunks.answer)
+  //     await strm.writeln(chunks.answer)
   //   }
   // })
 
-  return c.text(streamm.context[0].pageContent)
+  return c.json(streamm)
 })
 
 export default app

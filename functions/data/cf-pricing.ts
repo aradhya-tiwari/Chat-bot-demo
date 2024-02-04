@@ -7,6 +7,9 @@ All included usage is on a monthly basis.
 
 Pages Functions billing
 All Pages Functions are billed as Workers. All pricing and inclusions in this document apply to Pages Functions. Refer to Functions Pricing for more information on Pages Functions pricing.
+
+
+--X--
 ​​Workers
 Workers Standard pricing is now available
 New, simplified pricing is available for Workers under a new usage model, called Workers Standard. Opt-in to Workers Standard pricing today.
@@ -95,7 +98,9 @@ Paid plan
 Requests 1	10 million / month, +$0.05/million
 1 Workers Logpush charges for request logs that reach your end destination after applying filtering or sampling.
 
-​​Workers KV
+
+--X--
+Workers KV
 Workers KV is included in both the Free and Paid Workers plans.
 
 Free plan1	Paid plan
@@ -108,6 +113,9 @@ Stored data	1 GB	1 GB, + $0.50/ GB-month
 
 KV documentation
 To learn more about KV, refer to the KV documentation.
+
+
+--X--
 ​​Queues
 Cloudflare Queues requires the Workers Paid plan to use, but does not increase your monthly subscription cost.
 Cloudflare Queues charges for the total number of operations against each of your queues during a given month.
@@ -129,14 +137,18 @@ Messages that reach the maximum retries and that are written to a Dead Letter Qu
 Messages that are written to a queue, but that reach the maximum persistence duration (or “expire”) before they are read, incur only a write and delete operation per 64 KB chunk.
 Queues billing examples
 To learn more about Queues pricing and review billing examples, refer to Queues Pricing.
-​​D1
+​
+
+--X--
+cloudflare ​D1 database
 D1 is available on both the Workers Free and Workers Paid plans.
 
-Workers Free	Workers Paid
+D1 in Workers Free	D1 in Workers Paid
 Rows read	5 million / day	First 25 billion / month included + $0.001 / million rows
 Rows written	100,000 / day	First 50 million / month included + $1.00 / million rows
 Storage (per GB stored)	5 GB (total)	First 5 GB included + $0.75 / GB-mo
-​​Definitions
+​
+​Definitions
 Rows read measure how many rows a query reads (scans), regardless of the size of each row. For example, if you have a table with 5000 rows and run a SELECT * FROM table as a full table scan, this would count as 5,000 rows read. A query that filters on an unindexed column may return fewer rows to your Worker, but is still required to read (scan) more rows to determine which subset to return.
 Rows written measure how many rows were written to D1 database. A query that INSERT 10 rows into a users table would count as 10 rows written.
 Row size or the number of columns in a row does not impact how rows are counted. A row that is 1 KB and a row that is 100 KB both count as one row.
@@ -145,8 +157,12 @@ Indexes will add an additional written row when writes include the indexed colum
 Storage is based on gigabytes stored per month, and is based on the sum of all databases in your account. Tables and indexes both count towards storage consumed.
 Free limits reset daily at 00:00 UTC. Monthly included limits reset based on your monthly subscription renewal date, which is determined by the day you first subscribed.
 There are no data transfer (egress) or throughput (bandwidth) charges for data accessed from D1.
+
 D1 billing
 Refer to D1 Pricing to learn more about how D1 is billed.
+
+
+--X--
 ​​Durable Objects
 Durable Objects are only available on the Workers Paid plan.
 
@@ -185,6 +201,8 @@ Stored data5	1 GB, + $0.20/ GB-month
 
 Requests that hit the Durable Objects in-memory cache or that use the multi-key versions of get()/put()/delete() methods are billed the same as if they were a normal, individual request for each key.
 
+
+--X--
 ​​Vectorize
 Vectorize is currently only available on the Workers paid plan.
 
