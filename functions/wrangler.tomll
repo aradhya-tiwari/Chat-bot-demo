@@ -1,0 +1,26 @@
+name = "functions"
+compatibility_date = "2023-12-01"
+account_id = "1785086e7055ade9514f54f8ccd1b554"
+[vars]
+MY_VARIABLE = "production_value"
+OPENAI_KEY = "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"
+
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[[vectorize]]
+binding = "VECTORIZE_INDEX"
+index_name = ""
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "demo"
+
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = ""

@@ -1,4 +1,17 @@
-GET http://127.0.0.1:8787/
+GET http://127.0.0.1:3000/chat
 Content-Type:text/plain
 Transfer-Encoding:chunked
 X-Content-Type-Options:nosniff
+Authorization: Basic 123:123
+###
+
+POST http://127.0.0.1:3000/chat http/1.1  
+content-Type: application/x-www-form-urlencoded
+Authorization: Basic 123:123
+
+query="cloudflare d1"
+
+###
+
+post http://127.0.0.1:3000/
+Authorization: Basic 123:123
