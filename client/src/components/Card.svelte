@@ -19,6 +19,7 @@
     }
 </script>
 
+<div class="w-10 h-10 bg-black">000</div>
 <input type="" name="query" id="" bind:value={query} />
 <input type="submit" value="Submit" on:click={() => chat()} />
-{txt.answer || "---"}
+{txt.answer || ""}

@@ -1,10 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import Chat from "../components/Chat.svelte";
 import Card from "../components/Card.svelte";
 ---
 
-<Card client:load>
-	<script>
-		const data = new FormData();
-	</script>
-</Card>
+<Layout title="Chat with Doc">
+    <Chat client:load />
+</Layout>

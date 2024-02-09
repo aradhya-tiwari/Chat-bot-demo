@@ -96,8 +96,8 @@ Question: {input}`);
 
 app.post("/chat", async (c) => {
   // return c.text("Ok")
-  const body = await c.req.json()
-  const query = body["query"]
+  const body = await c.req.parseBody()
+  const query = body["query"].toString()
 
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
   const chatModel = new ChatOpenAI({
@@ -114,7 +114,7 @@ app.post("/chat", async (c) => {
   const retriever = vectorStore.asRetriever();
 
   const prompt =
-    ChatPromptTemplate.fromTemplate(`Summarize all the products of the embeddings  
+    ChatPromptTemplate.fromTemplate(`Summarize all the products of the embeddings  and dont answer anything other than context
   
   <context>
   {context}
@@ -132,11 +132,12 @@ app.post("/chat", async (c) => {
     combineDocsChain: documentChain,
     retriever,
   });
+
   let streamm = await retrievalChain.invoke({ input: query })
 
 
 
-  const resultOne = await vectorStore.similaritySearch("fuck off to whom", 1);
+  const resultOne = await vectorStore.similaritySearch("to whom", 1);
   console.log(resultOne);
   return c.json(streamm)
 
@@ -146,8 +147,10 @@ app.post("/chat", async (c) => {
 
 
 app.post('/r2', async (c) => {
-  const query = await c.req.parseBody({ all: true })
-  return c.json(query)
+  const query = await c.req.parseBody()
+  const files = query.files
+  console.log((files))
+  return c.json(query['files'])
   const splitter = new RecursiveCharacterTextSplitter({ separators: ['/n', '/n/n', "--X--", " ", ''] });
   const doc = new Document({ pageContent: embeddingText });
   const splitDocs = await splitter.splitDocuments([doc]);

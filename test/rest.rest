@@ -6,10 +6,12 @@ Authorization: Basic 123:123
 ###
 
 POST http://127.0.0.1:3000/chat http/1.1  
-content-Type: application/x-www-form-urlencoded
+content-Type: application/json
 Authorization: Basic 123:123
 
-query="cloudflare d1"
+{
+    "query":"What si your age"
+}
 
 ###
 
