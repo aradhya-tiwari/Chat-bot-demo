@@ -4,8 +4,12 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.7.0",
+    "@langchain/openai": "^0.0.14",
     "dotenv": "^16.4.1",
-    "hono": "^3.12.8"
+    "hnswlib-node": "^1.4.2",
+    "hono": "^3.12.8",
+    "langchain": "^0.1.17",
+    "vectordb": "^0.1.19"
   },
   "devDependencies": {
     "tsx": "^3.12.2"

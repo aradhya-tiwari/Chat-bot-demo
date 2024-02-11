@@ -31,7 +31,7 @@ dotenv.config()
 
 const app = new Hono()
 
-let tbl = "doccs"
+let tbl = "tablee "
 
 app.use('*', cors({
   origin: ["http://localhost:4321", "*"],
@@ -97,24 +97,24 @@ Question: {input}`);
 app.post("/chat", async (c) => {
   // return c.text("Ok")
   const body = await c.req.parseBody()
-  const query = body["query"].toString()
+  const query = (body["query"]) as string
 
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
   const chatModel = new ChatOpenAI({
     openAIApiKey: OPENAI_KEY,
     streaming: true,
-    // maxTokens: 100
+    maxTokens: 100
   });
   const uri = './data/lancedb-train'
   const db = await connect(uri);
   const table = await db.openTable(tbl);
 
   const vectorStore = new LanceDB(new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY }), { table });
-
+  console.log(vectorStore)
   const retriever = vectorStore.asRetriever();
-
+  //You are pricing bot tells about only pricing and no other text 
   const prompt =
-    ChatPromptTemplate.fromTemplate(`Summarize all the products of the embeddings  and dont answer anything other than context
+    ChatPromptTemplate.fromTemplate(`
   
   <context>
   {context}
@@ -133,9 +133,16 @@ app.post("/chat", async (c) => {
     retriever,
   });
 
-  let streamm = await retrievalChain.invoke({ input: query })
-
-
+  console.log("--------------->" + query)
+  let streamm = await retrievalChain.stream({ input: query })
+  return streamText(c, async (strm) => {
+    let sm = "Wow"
+    for await (let chunks of streamm) {
+      console.log(chunks.answer)
+      let ans = (chunks.answer) ? chunks.answer : "."
+      await strm.write(ans)
+    }
+  })
 
   const resultOne = await vectorStore.similaritySearch("to whom", 1);
   console.log(resultOne);
@@ -146,11 +153,23 @@ app.post("/chat", async (c) => {
 })
 
 
-app.post('/r2', async (c) => {
-  const query = await c.req.parseBody()
-  const files = query.files
-  console.log((files))
-  return c.json(query['files'])
+app.get('/r2', async (c) => {
+  const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
+  const chatModel = new ChatOpenAI({
+    openAIApiKey: OPENAI_KEY,
+    streaming: true,
+    // maxTokens: 100
+  });
+  const embeddings = new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY })
+  let vctr = await embeddings.embedQuery("Hello world")
+  const db = await connect('./data/lancedb-train')
+  const table = await db.openTable(tbl);
+  // const query = await c.req.parseBody()
+  // const files = query.files
+  table.add([{ vector: await embeddings.embedQuery("Pricing of cloudflare vectorise is 0.04$ per million requests"), text: "Pricing of cloudflare vectorise is 0.04$ per million requests" }])
+  console.log((vctr))
+  return c.text("ok")
+  // return c.json(query['files'])
   const splitter = new RecursiveCharacterTextSplitter({ separators: ['/n', '/n/n', "--X--", " ", ''] });
   const doc = new Document({ pageContent: embeddingText });
   const splitDocs = await splitter.splitDocuments([doc]);
@@ -160,6 +179,8 @@ app.post('/r2', async (c) => {
 
 app.get('/train', async (c) => {
 
+  const body = await c.req.parseBody()
+  const file = body['file']
 
   const db = await connect('./data/lancedb-train')
 
@@ -172,15 +193,17 @@ app.get('/train', async (c) => {
   const splitDocs = await splitter.splitDocuments([doc]);
 
   // const table = await db.createTable(tbl, [
-  //   { vector: Array(1536), text: "sample", id: 1, },
+  //   { vector: Array(1536), text: "sample", },
   // ]);
   const table = await db.openTable(tbl);
-  const vectorstore = await LanceDB.fromTexts(["Cost of cloudflare kutta is (0.00023+0.001) $ per million request"], { id: 21 }, embeddings, { table })
+  // const vectorstore = await LanceDB.fromTexts(["Cost of cloudflare kutta is (0.00023+0.001) $ per million request"], { id: 0 }, embeddings, { table })
   // const vectorstore = await LanceDB.fromDocuments(
   // docs,
   //   embeddings,
   //   { table }
   // );
+
+  console.log(vectorstore)
   const resultOne = await vectorstore.similaritySearch("Summarize", 1);
   return c.json(resultOne)
 })

@@ -5,7 +5,7 @@
         answer: "Hi There... 🙌",
     };
     async function chat() {
-        txt = { answer: "Loading..." };
+        txt = "";
         const formData = new FormData();
         // let dta = await files[0].text();
         // console.log("Data" + dta);
@@ -20,10 +20,34 @@
             },
             body: formData,
         });
-
-        let etchh = await fetchh.json();
-        txt = etchh;
-        console.log(txt);
+        let streamm = fetchh.body;
+        const reader = streamm.getReader();
+        const readChunk = () => {
+            // Read a chunk from the reader
+            reader
+                .read()
+                .then(({ value, done }) => {
+                    // Check if the stream is done
+                    if (done) {
+                        // Log a message
+                        console.log("Stream finished");
+                        // Return from the function
+                        return;
+                    }
+                    // Convert the chunk value to a string
+                    const chunkString = new TextDecoder().decode(value);
+                    // Log the chunk string
+                    txt += chunkString;
+                    // Read the next chunk
+                    readChunk();
+                })
+                .catch((error) => {
+                    // Log the error
+                    console.error(error);
+                });
+        };
+        // Start reading the first chunk
+        readChunk();
     }
 </script>
 
@@ -39,7 +63,8 @@
         <div
             class=" overflow-y-scroll w-full p-5 text-xs text-gray-600 bg-slate-100 rounded-2xl h-[85%] shadow-lg"
         >
-            {txt.name}
+            {txt}
+            <span class="text-black font-bold">|</span>
         </div>
         <div
             class=" relative justify-between flex top-2 w-full border border-green-500"
@@ -49,13 +74,13 @@
                 name=""
                 id="srch-box"
                 placeholder="Search for pricing"
-                class=" text-sm shadow-md rounded-md p-1 w-full"
+                class=" text-sm shadow-md rounded-md p-1 w-[80%] rounded-e-none"
                 bind:value={query}
             />
-            <input type="file" name="file" id="" bind:files />
+            <!-- <input type="file" name="file" id="" bind:files /> -->
             <button
                 type="submit"
-                class=" bg-black absolute right-0 h-full hover:scale-x-110 transition-all text-white px-2 rounded-lg focus:outline-none"
+                class=" bg-black right-0 h-full absolute hover:scale-x-110 transition-all text-white px-2 rounded-lg focus:outline-none rounded-s-none"
                 on:click={chat}>Chat</button
             >
         </div>
