@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { cors } from 'hono/cors'
+
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { streamText, streamSSE } from 'hono/streaming'
@@ -95,9 +96,9 @@ Question: {input}`);
 })
 
 app.post("/chat", async (c) => {
-  // return c.text("Ok")
   const body = await c.req.parseBody()
   const query = (body["query"]) as string
+  console.log("Ok")
 
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
   const chatModel = new ChatOpenAI({
@@ -114,7 +115,7 @@ app.post("/chat", async (c) => {
   const retriever = vectorStore.asRetriever();
   //You are pricing bot tells about only pricing and no other text 
   const prompt =
-    ChatPromptTemplate.fromTemplate(`
+    ChatPromptTemplate.fromTemplate(`You are company bot, tells about companies
   
   <context>
   {context}
@@ -177,12 +178,15 @@ app.get('/r2', async (c) => {
 })
 
 
-app.get('/train', async (c) => {
+app.post('/train', async (c) => {
 
   const body = await c.req.parseBody()
-  const file = body['file']
+
+  let dta: File | string = body['files'] as File
+  let file = await dta.text()
 
   const db = await connect('./data/lancedb-train')
+
 
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
   const splitter = new RecursiveCharacterTextSplitter({ separators: ['/n', '/n/n', "--X--", " ", ''] });
@@ -190,25 +194,38 @@ app.get('/train', async (c) => {
   const embeddings = new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY })
   const loader = new TextLoader("./data/cf-ricing.txt");
   const docs = await loader.load();
-  const splitDocs = await splitter.splitDocuments([doc]);
+  const splitDocs = await splitter.splitText(file);
 
   // const table = await db.createTable(tbl, [
   //   { vector: Array(1536), text: "sample", },
   // ]);
+
   const table = await db.openTable(tbl);
-  // const vectorstore = await LanceDB.fromTexts(["Cost of cloudflare kutta is (0.00023+0.001) $ per million request"], { id: 0 }, embeddings, { table })
+  // table.add([{
+  //   vector: await splitDocs.map(embs => embeddings.embedQuery(embs)), text: splitDocs.map(embs => (embs))
+  // }])
+  // await splitDocs.map(embs => table.add([{ vector: embeddings.embedQuery(embs), text: embs }]))
+
+  const vectorstore = await LanceDB.fromTexts(splitDocs.map(embs => embs), [Array(splitDocs.length).map(e => { id: e })], embeddings, { table })
+
   // const vectorstore = await LanceDB.fromDocuments(
   // docs,
   //   embeddings,
   //   { table }
   // );
 
-  console.log(vectorstore)
-  const resultOne = await vectorstore.similaritySearch("Summarize", 1);
-  return c.json(resultOne)
+  // console.log(vectorstore)
+  // const resultOne = await vectorstore.similaritySearch("Summarize", 1);
+  return c.json({ res: "ok", sample: table })
 })
 
 
+
+app.get('/db', async (c) => {
+  const db = await connect('./data/lancedb-train')
+  const table = await db.openTable(tbl);
+  return c.json({ l: table.countRows })
+})
 // export default app
 
 serve({

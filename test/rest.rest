@@ -1,5 +1,5 @@
 post http://127.0.0.1:3000/
-Content-Type:text/plain
+Content-Type: multipart/form-data
 Transfer-Encoding:chunked
 X-Content-Type-Options:nosniff
 Authorization: Basic 123:123
@@ -10,9 +10,11 @@ Content-Type:application/x-www-form-urlencoded
 # Transfer-Encoding:chunked
 Authorization: Basic 123:123
 
-query=cloudflare vectorise
+query=hung
 
 ###
 
-get http://127.0.0.1:3000/r2
+get http://127.0.0.1:3000/train
 Authorization: Basic 123:123
+
+

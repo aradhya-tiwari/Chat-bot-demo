@@ -1,11 +1,9 @@
 <script>
     let query = "cloudflare d1";
     let files = {};
-    let txt = {
-        answer: "Hi There... 🙌",
-    };
+    let txt = "";
     async function chat() {
-        txt = "";
+        txt = "Loading...";
         const formData = new FormData();
         // let dta = await files[0].text();
         // console.log("Data" + dta);
@@ -22,6 +20,7 @@
         });
         let streamm = fetchh.body;
         const reader = streamm.getReader();
+        txt = "";
         const readChunk = () => {
             // Read a chunk from the reader
             reader
@@ -57,8 +56,10 @@
         rel="stylesheet"
     />
 </svelte:head>
-<div class="w-[full]">
-    <div class="model rounded-3xl shadow-xl relative bg-slate-300">
+<div class="w-full h-screen md:py-[5vh] relative">
+    <div
+        class="w-full h-full md:h-[90vh] md:w-4/5 m-auto p-10 rounded-3xl shadow-xl relative bg-slate-300"
+    >
         <h1 class=" font-extrabold mb-3">Actionable.ai</h1>
         <div
             class=" overflow-y-scroll w-full p-5 text-xs text-gray-600 bg-slate-100 rounded-2xl h-[85%] shadow-lg"
@@ -74,13 +75,13 @@
                 name=""
                 id="srch-box"
                 placeholder="Search for pricing"
-                class=" text-sm shadow-md rounded-md p-1 w-[80%] rounded-e-none"
+                class=" text-sm shadow-md rounded-md p-1 w-full h-[5vh] focus:outline-none focus:border-2 border-black rounded-e-none"
                 bind:value={query}
             />
             <!-- <input type="file" name="file" id="" bind:files /> -->
             <button
                 type="submit"
-                class=" bg-black right-0 h-full absolute hover:scale-x-110 transition-all text-white px-2 rounded-lg focus:outline-none rounded-s-none"
+                class=" bg-black h-[5vh] hover:scale-x-110 transition-all text-white px-2 rounded-lg focus:outline-none rounded-s-none"
                 on:click={chat}>Chat</button
             >
         </div>
@@ -92,12 +93,4 @@
     {/await} -->
 
 <style>
-    .model {
-        width: 300px;
-        height: 450px;
-        border: 1px solid black;
-        margin: auto;
-        margin-top: 50px;
-        padding: 30px;
-    }
 </style>
