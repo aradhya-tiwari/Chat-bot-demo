@@ -14,5 +14,7 @@
     "functions",
     "packages/*"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "svelte": "^4.2.12"
+  }
 }

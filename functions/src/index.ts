@@ -7,7 +7,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { streamText, streamSSE } from 'hono/streaming'
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { embeddingText } from '../data/cf-pricing'
+// import { embeddingText } from '../data/cf-pricing'
 import { Document } from "langchain/document";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
@@ -20,6 +20,9 @@ import { basicAuth } from 'hono/basic-auth'
 import { connect } from "vectordb";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { FaissStore } from "@langchain/community/vectorstores/faiss";
+import { app as train } from './routes/train'
+import { app as answer } from './routes/answer'
 // import os from "node:os";
 
 
@@ -31,14 +34,20 @@ dotenv.config()
 // }
 
 const app = new Hono()
+app.basePath('/api')
+app.route('/trainn', train)
+app.route('/answer', answer)
 
-let tbl = "tablee "
+let tbl = "table "
 
-app.use('*', cors({
+app.use('/*', cors({
   origin: ["http://localhost:4321", "*"],
   credentials: true
 })
 )
+
+
+
 
 // app.use('*', basicAuth({
 //   username: '123',
@@ -95,7 +104,11 @@ Question: {input}`);
   return c.json(streamm)
 })
 
+
+
+
 app.post("/chat", async (c) => {
+  console.log("Chatting...")
   const body = await c.req.parseBody()
   const query = (body["query"]) as string
   console.log("Ok")
@@ -111,17 +124,20 @@ app.post("/chat", async (c) => {
   const table = await db.openTable(tbl);
 
   const vectorStore = new LanceDB(new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY }), { table });
-  console.log(vectorStore)
+  // console.log(vectorStore)
   const retriever = vectorStore.asRetriever();
   //You are pricing bot tells about only pricing and no other text 
   const prompt =
-    ChatPromptTemplate.fromTemplate(`You are company bot, tells about companies
-  
-  <context>
-  {context}
-  </context>
-  
-  Question: {input}`);
+    ChatPromptTemplate.fromTemplate(
+      `
+    You are a medical chatbot that tells user about ayurvedic medicine only from the given knowledge, dont tell anything extra just from the given knowledge
+    <context>
+    {context}
+    </context>
+    
+    Question: {input}
+  `
+    );
 
   const documentChain = await createStuffDocumentsChain({
     llm: chatModel,
@@ -133,7 +149,9 @@ app.post("/chat", async (c) => {
     combineDocsChain: documentChain,
     retriever,
   });
-
+  type car = {
+    cata: number
+  }
   console.log("--------------->" + query)
   let streamm = await retrievalChain.stream({ input: query })
   return streamText(c, async (strm) => {
@@ -178,10 +196,20 @@ app.get('/r2', async (c) => {
 })
 
 
+app.get('/createTable', async (c) => {
+  const uri = './data/lancedb-train'
+  const db = await connect(uri);
+  let schema = {};
+
+  const table = await db.createTable(tbl, [
+    { vector: Array(1536), text: "sample", },
+  ]);
+  return c.text("done")
+})
 app.post('/train', async (c) => {
 
   const body = await c.req.parseBody()
-
+  console.log("Entered")
   let dta: File | string = body['files'] as File
   let file = await dta.text()
 
@@ -190,10 +218,10 @@ app.post('/train', async (c) => {
 
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
   const splitter = new RecursiveCharacterTextSplitter({ separators: ['/n', '/n/n', "--X--", " ", ''] });
-  const doc = new Document({ pageContent: embeddingText });
+  // const doc = new Document({ pageContent: embeddingText });
   const embeddings = new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY })
-  const loader = new TextLoader("./data/cf-ricing.txt");
-  const docs = await loader.load();
+  // const loader = new TextLoader("./data/cf-ricing.txt");
+  // const docs = await loader.load();
   const splitDocs = await splitter.splitText(file);
 
   // const table = await db.createTable(tbl, [
@@ -219,7 +247,20 @@ app.post('/train', async (c) => {
   return c.json({ res: "ok", sample: table })
 })
 
+app.get('/faiss', async (c) => {
 
+  const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
+
+  const vectorStore = await FaissStore.fromTexts(
+    ["Hello world", "Bye bye", "hello nice world"],
+    [{ id: 2 }, { id: 1 }, { id: 3 }],
+    new OpenAIEmbeddings({ openAIApiKey: OPENAI_KEY })
+  );
+
+  const resultOne = await vectorStore.similaritySearch("hello world", 1);
+  console.log(resultOne);
+
+})
 
 app.get('/db', async (c) => {
   const db = await connect('./data/lancedb-train')
@@ -230,7 +271,7 @@ app.get('/db', async (c) => {
 
 serve({
   fetch: app.fetch,
-  port: 3000
-})
+  port: 3001
+}, () => console.log("Listening..."))
 
 
