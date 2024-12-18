@@ -23,6 +23,7 @@ import * as path from "node:path";
 import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import { app as train } from './routes/train'
 import { app as answer } from './routes/answer'
+import { app as gemini } from "./routes/gemini"
 // import os from "node:os";
 
 
@@ -34,20 +35,22 @@ dotenv.config()
 // }
 
 const app = new Hono()
+app.use('*', cors({
+  origin: ["http://localhost:4321", "*"],
+  credentials: true
+}))
 app.basePath('/api')
 app.route('/trainn', train)
 app.route('/answer', answer)
-
-let tbl = "table "
-
-app.use('/*', cors({
-  origin: ["http://localhost:4321", "*"],
-  credentials: true
-})
-)
+app.route("/chat_gemini", gemini)
+let tbl = "table"
 
 
 
+async function comp(c: any, next: any) {
+  console.log(c.req.header('origin'))
+  await next()
+}
 
 // app.use('*', basicAuth({
 //   username: '123',
@@ -107,7 +110,7 @@ Question: {input}`);
 
 
 
-app.post("/chat", async (c) => {
+app.post("/chat", comp, async (c) => {
   console.log("Chatting...")
   const body = await c.req.parseBody()
   const query = (body["query"]) as string
@@ -117,7 +120,7 @@ app.post("/chat", async (c) => {
   const chatModel = new ChatOpenAI({
     openAIApiKey: OPENAI_KEY,
     streaming: true,
-    maxTokens: 100
+    maxTokens: 1000
   });
   const uri = './data/lancedb-train'
   const db = await connect(uri);
@@ -130,7 +133,7 @@ app.post("/chat", async (c) => {
   const prompt =
     ChatPromptTemplate.fromTemplate(
       `
-    You are a medical chatbot that tells user about ayurvedic medicine only from the given knowledge, dont tell anything extra just from the given knowledge
+    You are a financial chatbot that tells user about quantitative and qualitative data about companies answers questions only from the given knowledge, 
     <context>
     {context}
     </context>
@@ -157,7 +160,7 @@ app.post("/chat", async (c) => {
   return streamText(c, async (strm) => {
     let sm = "Wow"
     for await (let chunks of streamm) {
-      console.log(chunks.answer)
+      // console.log(chunks.answer)
       let ans = (chunks.answer) ? chunks.answer : "."
       await strm.write(ans)
     }
@@ -171,6 +174,9 @@ app.post("/chat", async (c) => {
 
 })
 
+app.get("/chatGemini", async (c) => {
+
+})
 
 app.get('/r2', async (c) => {
   const { OPENAI_KEY } = env<{ OPENAI_KEY: string }>(c)
@@ -202,7 +208,7 @@ app.get('/createTable', async (c) => {
   let schema = {};
 
   const table = await db.createTable(tbl, [
-    { vector: Array(1536), text: "sample", },
+    { vector: Array(768), text: "vector", },
   ]);
   return c.text("done")
 })
@@ -264,6 +270,7 @@ app.get('/faiss', async (c) => {
 
 app.get('/db', async (c) => {
   const db = await connect('./data/lancedb-train')
+  db.createTable
   const table = await db.openTable(tbl);
   return c.json({ l: table.countRows })
 })
@@ -271,7 +278,7 @@ app.get('/db', async (c) => {
 
 serve({
   fetch: app.fetch,
-  port: 3001
+  port: 3000
 }, () => console.log("Listening..."))
 
 

@@ -2,8 +2,13 @@
 import Layout from "../layouts/Layout.astro";
 import Chat from "../components/Chat.svelte";
 import Card from "../components/Card.svelte";
+
+let headers = Astro.request.headers;
+let h2 = JSON.stringify(Object.fromEntries(headers));
+console.log(Astro.url.toJSON());
 ---
 
-<Layout title="Chat with Doc">
+<Layout title="Finn Recommend">
     <Chat client:load />
 </Layout>
+\

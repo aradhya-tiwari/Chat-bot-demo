@@ -1,8 +1,9 @@
 <script>
     import Widget from "./Widget.svelte";
-    let query = "Rieshi";
+    import { onMount } from "svelte";
+    let query = "What is zeel";
     let files = {};
-    let txt = "";
+    let txt = "Search For Something";
     $: msg = [];
 
     async function chat(qry) {
@@ -17,7 +18,7 @@
         formData.append("query", query);
         formData.append("filess", files[0]);
         // console.log(files[0].name);
-        let fetchh = await fetch("http://localhost:3001/chat", {
+        let fetchh = await fetch("http://localhost:3000/chat_gemini", {
             method: "POST",
 
             headers: {
@@ -57,8 +58,20 @@
         };
         // Start reading the first chunk
         readChunk();
-        // onMount(() => {});
+
+        // onMount(() => {
+        //     document.body.addEventListner("keypress", (e) => {
+        //         if (e.key == "enter") {
+        //             console.log("Key Pressesd");
+        //             chat(query);
+        //         }
+        //     });
+        // });
     }
+    let str = "..";
+    onMount(() => {
+        str = window.innerWidth;
+    });
 </script>
 
 <svelte:head>
@@ -67,12 +80,12 @@
         rel="stylesheet"
     />
 </svelte:head>
-<div class="w-full h-screen md:py-[5vh] relative">
+<div class="w-full h-screen min-w-[500px] md:py-[5vh] relative">
     <div
         class="w-full h-full md:h-[90vh] md:w-4/5 m-auto p-10 rounded-3xl shadow-xl relative bg-slate-300"
     >
         <h1 class=" font-bold mb-3 text text-3xl text-blue-700">
-            Ayu<span class="text-green-700">RecommenD</span>
+            Finn<span class="text-green-700">RecommenD</span>
         </h1>
         <div
             class=" overflow-y-scroll w-full p-5 bg-slate-400 rounded-2xl h-[85%] shadow-lg"
@@ -80,10 +93,9 @@
             {#each msg as m}
                 <Widget text={m.txt} by={m.by} />
             {/each}
-
-            <span class="text-black font-bold">|</span>
         </div>
-        <div
+        <form
+            on:submit|preventDefault
             class=" relative justify-between flex top-2 w-full border border-green-500"
         >
             <input
@@ -100,7 +112,7 @@
                 class=" bg-black h-[5vh] hover:scale-x-110 transition-all text-white px-10 rounded-lg focus:outline-none rounded-s-none"
                 on:click={() => chat(query)}>Chat</button
             >
-        </div>
+        </form>
     </div>
 </div>
 

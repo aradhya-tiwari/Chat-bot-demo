@@ -1,4 +1,5 @@
 <script>
+    import { marked } from "marked";
     export let text;
     export let by;
 </script>
@@ -12,7 +13,8 @@
                 class="w-[50px] m-2 h-[50px] border-2 rounded-full bg-white/80 shadow-md"
             ></div>
             <div class="w-[90%] bg-black/20 m-2 rounded-lg p-2">
-                {text}
+                {@html marked.parse(text)}
+                <span class="text-black font-bold">|</span>
             </div>
         </div>
     </div>
@@ -27,7 +29,7 @@
                 <b class="text-center m-auto text-base">YOU</b>
             </div>
             <div class="w-[90%] bg-black/20 m-2 rounded-lg">
-                {text}
+                {@html marked.parse(text)}
             </div>
         </div>
     </div>

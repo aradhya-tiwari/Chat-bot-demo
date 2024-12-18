@@ -7,7 +7,7 @@
         let dta = await files[0].text();
         console.log(dta);
         formData.append("files", files[0]);
-        let fetchh = await fetch("http://localhost:3001/train", {
+        let fetchh = await fetch("http://localhost:3000/chat_gemini/train", {
             method: "POST",
             headers: {
                 // "Content-Type": "multipart/form-data",

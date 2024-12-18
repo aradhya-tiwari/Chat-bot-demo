@@ -1,6 +1,7 @@
 name = "functions"
 compatibility_date = "2023-12-01"
-node_compat = true
+compatibility_flags = ["nodejs_compat"]
+# node_compat = true
 account_id = "1785086e7055ade9514f54f8ccd1b554"
 [vars]
 MY_VARIABLE = "production_value"
